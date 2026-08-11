@@ -3,9 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>KundalikY</title>
+<title>KundalikY — Oy, hafta, kun rejalashtiruvchi</title>
+<meta name="description" content="Hayotingizni besh yo'nalishda balansda ushlab turing: Biznes, Bilim, Oila, Sport va Qiziqishlar. Oylik maqsad, haftalik reja va kunlik harakatlarni bitta joyda yuriting.">
 <meta name="theme-color" content="#f7f5f0">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="KundalikY — Oy, hafta, kun rejalashtiruvchi">
+<meta property="og:description" content="Hayotingizni besh yo'nalishda balansda ushlab turing: Biznes, Bilim, Oila, Sport va Qiziqishlar.">
+<meta property="og:image" content="icon-512.png">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="KundalikY">
+<meta name="twitter:description" content="Oy, hafta va kunlik rejalashtirish ilovasi">
+<meta name="twitter:image" content="icon-512.png">
+
 <link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -36,23 +49,107 @@
   </div>
 
   <div id="settingsScreen" class="hidden">
-    <div class="topbar"><h1 class="serif">Sozlamalar</h1></div>
-
-    <div class="section-title">Ko'rinish</div>
-    <div class="settings-row">
-      <span>Tungi rejim</span>
-      <button class="switch" id="darkSwitch"></button>
+    <div class="topbar">
+      <p class="eyebrow">BOSHQARUV</p>
+      <h1 class="serif">Sozlamalar</h1>
     </div>
 
-    <div class="section-title">Tizim</div>
-    <div class="settings-row">
-      <span>Keshni tozalash</span>
-      <button class="btn ghost" style="width:auto;margin:0;padding:8px 14px;" id="clearCacheBtn">Tozalash</button>
+    <!-- Hisobni bog'lash (faqat mehmon bo'lsa ko'rinadi) -->
+    <div class="settings-card" id="linkAccountCard">
+      <div class="settings-card-title">Hisobni bog'lash</div>
+      <div class="settings-card-row">
+        <div>
+          <div class="row-title">Google bilan bog'lash</div>
+          <div class="row-sub">Hozir mehmon sifatida kirgansiz — ma'lumotlaringizni yo'qotmasdan Google hisobingizga bog'lab qo'ying</div>
+        </div>
+      </div>
+      <button class="btn primary" style="margin:0 18px 16px;width:calc(100% - 36px);" id="linkGoogleBtn">Bog'lash</button>
     </div>
-    <div class="settings-row">
-      <span>Chiqish</span>
-      <button class="btn ghost" style="width:auto;margin:0;padding:8px 14px;color:var(--danger);" id="signOutBtn">Chiqish</button>
+
+    <!-- Profil -->
+    <div class="settings-card">
+      <div class="settings-card-title">Profil ma'lumotlari</div>
+      <div class="field-block" style="padding-top:0;">
+        <label style="font-size:13px;">Ism</label>
+        <input type="text" id="profileNameInput" placeholder="Ismingiz" style="width:100%;padding:10px 12px;border-radius:10px;border:0.5px solid var(--border);background:var(--surface-2);color:var(--text);font-size:14px;outline:none;">
+      </div>
+      <div class="field-block" style="padding-top:0;">
+        <label style="font-size:13px;">Email</label>
+        <input type="text" id="profileEmailInput" disabled style="width:100%;padding:10px 12px;border-radius:10px;border:0.5px solid var(--border);background:var(--surface-2);color:var(--text-muted);font-size:14px;outline:none;">
+      </div>
     </div>
+
+    <!-- Ko'rinish -->
+    <div class="settings-card">
+      <div class="settings-card-title">Ko'rinish</div>
+      <div class="settings-row">
+        <div>
+          <div class="row-title">Tungi rejim</div>
+          <div class="row-sub">Ko'zga yumshoqroq, qorong'i mavzu</div>
+        </div>
+        <button class="switch" id="darkSwitch"></button>
+      </div>
+    </div>
+
+    <!-- Ilova -->
+    <div class="settings-card">
+      <div class="settings-card-title">Ilova</div>
+      <div class="settings-card-row" id="installRow">
+        <div>
+          <div class="row-title">Telefon/kompyuterga o'rnatish</div>
+          <div class="row-sub">Tezroq ochiladi, bosh ekranda alohida ikonka bo'ladi</div>
+        </div>
+      </div>
+      <button class="btn primary hidden" style="margin:0 18px 16px;width:calc(100% - 36px);" id="installBtn">O'rnatish</button>
+      <div class="settings-row" style="border-top:0.5px solid var(--border);">
+        <div>
+          <div class="row-title">Keshni tozalash</div>
+          <div class="row-sub">Sayt eski holatda ko'rinsa yoki yangilanish chiqmasa, shuni bosing</div>
+        </div>
+        <button class="btn ghost" style="width:auto;margin:0;padding:8px 14px;" id="clearCacheBtn">Tozalash</button>
+      </div>
+    </div>
+
+    <!-- Fikr-mulohaza -->
+    <div class="settings-card">
+      <div class="settings-card-title">Takliflar va fikr-mulohaza uchun</div>
+      <div class="settings-row">
+        <span>Telegram</span>
+        <a class="link-btn" href="https://t.me/yuuvsuf" target="_blank" rel="noopener">@yuuvsuf</a>
+      </div>
+      <div class="settings-row" style="border-bottom:none;">
+        <span>Instagram</span>
+        <a class="link-btn" href="https://instagram.com/yunusovvyusuf" target="_blank" rel="noopener">@yunusovvyusuf</a>
+      </div>
+    </div>
+
+    <!-- Qo'llab-quvvatlash -->
+    <div class="settings-card">
+      <div class="settings-card-title">Loyihani qo'llab-quvvatlash</div>
+      <p style="padding:0 18px;font-size:13px;color:var(--text-2);margin:0 0 12px;">Karta raqamni nusxalab, o'zingizga qulay bo'lgan tarzda bizni qo'llab-quvvatlang!</p>
+      <div class="card-number-box" id="cardNumberBox">
+        <div class="card-num">5614 6847 0539 1512</div>
+        <div class="card-owner">Yunusov Yusuf</div>
+      </div>
+    </div>
+
+    <!-- Xavfli hudud -->
+    <div class="settings-card">
+      <div class="settings-card-title" style="color:var(--danger);">Xavfli hudud</div>
+      <div class="settings-row">
+        <span>Chiqish</span>
+        <button class="btn ghost" style="width:auto;margin:0;padding:8px 14px;" id="signOutBtn">Chiqish</button>
+      </div>
+      <div class="settings-row" style="border-bottom:none;">
+        <div>
+          <div class="row-title">Hisobni o'chirish</div>
+          <div class="row-sub">Bu amalni ortga qaytarib bo'lmaydi</div>
+        </div>
+        <button class="btn ghost" style="width:auto;margin:0;padding:8px 14px;color:var(--danger);border-color:var(--danger);" id="deleteAccountBtn">O'chirish</button>
+      </div>
+    </div>
+
+    <p class="build-footer">KundalikY build v1</p>
   </div>
 
   <div class="bottom-nav">
