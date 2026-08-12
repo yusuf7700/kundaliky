@@ -16,12 +16,23 @@ const db = firebase.firestore();
 const CACHE_VERSION = "kundaliky-v1";
 
 const CATEGORIES = [
-  { key: "biznes",   label: "Biznes/ish",       badge: "Moliyaviy",     cls: "b-blue"   },
-  { key: "bilim",    label: "Bilim olish",       badge: "Intelektual",   cls: "b-green"  },
-  { key: "oila",     label: "Oila va do'stlar",  badge: "Munosabatlar",  cls: "b-purple" },
-  { key: "sport",    label: "Sport",             badge: "Jismoniy",      cls: "b-amber"  },
-  { key: "qiziqish", label: "Qiziqishlar",       badge: "Erkin vaqt",    cls: "b-teal"   }
+  { key: "biznes",   label: "Biznes/ish",       badge: "Moliyaviy",     monthlyBadge: "Qanday moliyaviy maqsadlar bor?",         cls: "b-blue"   },
+  { key: "bilim",    label: "Bilim olish",       badge: "Intelektual",   monthlyBadge: "Intelektual o'sishga tayyormisiz?",       cls: "b-green"  },
+  { key: "oila",     label: "Oila va do'stlar",  badge: "Munosabatlar",  monthlyBadge: "Munosabatlarda nimani yaxshilaymiz?",     cls: "b-purple" },
+  { key: "sport",    label: "Sport",             badge: "Jismoniy",      monthlyBadge: "Jismoniy rivojlanish eng muhimi",         cls: "b-amber"  },
+  { key: "qiziqish", label: "Qiziqishlar",       badge: "Erkin vaqt",    monthlyBadge: "Qanday qiziqishlaringiz bor?",            cls: "b-teal"   }
 ];
+
+const WEEK_DAYS = [
+  { key: "dushanba",   label: "Dushanba",   cls: "b-blue"  },
+  { key: "seshanba",   label: "Seshanba",   cls: "b-cream" },
+  { key: "chorshanba", label: "Chorshanba", cls: "b-green" },
+  { key: "payshanba",  label: "Payshanba",  cls: "b-red"   },
+  { key: "juma",       label: "Juma",       cls: "b-gray"  },
+  { key: "shanba",     label: "Shanba",     cls: "b-purple"},
+  { key: "yakshanba",  label: "Yakshanba",  cls: "b-red"   }
+];
+const WEEK_TOP_COLORS = ["b-blue", "b-cream", "b-amber", "b-red", "b-gray", "b-purple"];
 
 let currentUser = null;
 let currentView = "kunlik"; // kunlik | haftalik | oylik | sozlamalar
@@ -75,13 +86,28 @@ function emptyPeriodData() {
 function emptyDailyExtra() {
   return { eslatmalar: "", tahlil: "" };
 }
+function emptyWeeklyData() {
+  return { top: ["", "", "", "", "", ""], days: {} };
+}
 
 async function loadPeriod(kind, key) {
   const cacheKey = kind + ":" + key;
   if (periodCache[cacheKey]) return periodCache[cacheKey];
   const snap = await periodDocRef(kind, key).get();
+
+  if (kind === "weekly") {
+    let data = snap.exists ? snap.data() : emptyWeeklyData();
+    if (!data.top || !Array.isArray(data.top)) data.top = ["", "", "", "", "", ""];
+    while (data.top.length < 6) data.top.push("");
+    if (!data.days) data.days = {};
+    WEEK_DAYS.forEach(d => { if (data.days[d.key] === undefined) data.days[d.key] = ""; });
+    periodCache[cacheKey] = data;
+    return data;
+  }
+
   let data = snap.exists ? snap.data() : emptyPeriodData();
   CATEGORIES.forEach(c => { if (!data[c.key]) data[c.key] = []; });
+  if (data.top === undefined) data.top = "";
   if (kind === "daily") {
     const extra = emptyDailyExtra();
     Object.keys(extra).forEach(k => { if (data[k] === undefined) data[k] = extra[k]; });
@@ -142,18 +168,23 @@ async function renderMain() {
   const data = await loadPeriod(kind, key);
   content.innerHTML = "";
 
-  if (kind === "monthly") {
-    content.appendChild(buildProgressBlock(data));
-  }
+  if (kind === "weekly") {
+    renderWeeklyView(content, kind, key, data);
+  } else {
+    if (kind === "monthly") content.appendChild(buildProgressBlock(data));
 
-  CATEGORIES.forEach(cat => {
-    content.appendChild(buildCategoryBlock(kind, key, data, cat));
-  });
+    content.appendChild(buildTopField(kind, key, data,
+      kind === "monthly" ? "Bu oy uchun umumiy maqsad..." : "Bugungi asosiy fikr..."));
 
-  if (kind === "daily") {
-    content.appendChild(buildTextField(kind, key, data, "eslatmalar", "Eslatmalar", "Shoshilinch narsalarni yozib qo'ying..."));
-    content.appendChild(buildListBlock(kind, key, data, "uchrashuvlar", "Uchrashuvlar", null, "Uchrashuv qo'shish..."));
-    content.appendChild(buildTextField(kind, key, data, "tahlil", "Kun tahlili", "Kun qanday o'tdi, nima o'rgandingiz..."));
+    CATEGORIES.forEach(cat => {
+      content.appendChild(buildCategoryBlock(kind, key, data, cat));
+    });
+
+    if (kind === "daily") {
+      content.appendChild(buildTextField(kind, key, data, "eslatmalar", "Eslatmalar", "Shoshilinch narsalarni yozib qo'ying..."));
+      content.appendChild(buildListBlock(kind, key, data, "uchrashuvlar", "Uchrashuvlar", null, "Uchrashuv qo'shish..."));
+      content.appendChild(buildTextField(kind, key, data, "tahlil", "Kun tahlili", "Kun qanday o'tdi, nima o'rgandingiz..."));
+    }
   }
 
   const statusRow = document.createElement("div");
@@ -161,6 +192,72 @@ async function renderMain() {
   statusRow.id = "saveStatus";
   statusRow.innerHTML = `Saqlandi`;
   content.appendChild(statusRow);
+}
+
+function buildTopField(kind, key, data, placeholder) {
+  const wrap = document.createElement("div");
+  wrap.className = "field-block top-field";
+  const ta = document.createElement("textarea");
+  ta.rows = 2;
+  ta.placeholder = placeholder;
+  ta.value = data.top || "";
+  ta.oninput = () => {
+    data.top = ta.value;
+    queueSave(kind, key);
+  };
+  wrap.appendChild(ta);
+  return wrap;
+}
+
+function renderWeeklyView(content, kind, key, data) {
+  const topWrap = document.createElement("div");
+  topWrap.className = "field-block week-top";
+  WEEK_TOP_COLORS.forEach((cls, i) => {
+    const row = document.createElement("div");
+    row.className = "week-top-row";
+    const dot = document.createElement("span");
+    dot.className = "week-dot " + cls;
+    const input = document.createElement("input");
+    input.type = "text";
+    input.placeholder = "Yozing...";
+    input.value = data.top[i] || "";
+    input.oninput = () => {
+      data.top[i] = input.value;
+      queueSave(kind, key);
+    };
+    row.appendChild(dot);
+    row.appendChild(input);
+    topWrap.appendChild(row);
+  });
+  content.appendChild(topWrap);
+
+  const grid = document.createElement("div");
+  grid.className = "week-grid";
+  WEEK_DAYS.forEach(day => {
+    const card = document.createElement("div");
+    card.className = "week-day-card";
+
+    const head = document.createElement("div");
+    head.className = "week-day-head";
+    head.innerHTML = `<span class="week-day-label">${day.label}</span>`;
+    const pill = document.createElement("span");
+    pill.className = "day-pill " + day.cls;
+    head.appendChild(pill);
+    card.appendChild(head);
+
+    const ta = document.createElement("textarea");
+    ta.rows = 3;
+    ta.placeholder = "Rejalar...";
+    ta.value = data.days[day.key] || "";
+    ta.oninput = () => {
+      data.days[day.key] = ta.value;
+      queueSave(kind, key);
+    };
+    card.appendChild(ta);
+
+    grid.appendChild(card);
+  });
+  content.appendChild(grid);
 }
 
 function buildProgressBlock(data) {
@@ -184,14 +281,16 @@ const ICON_TRASH = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
 const ICON_X = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
 
 function buildCategoryBlock(kind, key, data, cat) {
-  return buildListBlock(kind, key, data, cat.key, cat.label, { badge: cat.badge, cls: cat.cls }, "Vazifa qo'shish...");
+  const badgeText = kind === "monthly" ? cat.monthlyBadge : cat.badge;
+  const cls = kind === "monthly" ? cat.cls + " badge-wide" : cat.cls;
+  return buildListBlock(kind, key, data, cat.key, cat.label, { badge: badgeText, cls }, "Vazifa qo'shish...");
 }
 
 function buildListBlock(kind, key, data, fieldKey, label, badgeInfo, placeholder) {
   const wrap = document.createElement("div");
   wrap.className = "category";
   const head = document.createElement("div");
-  head.className = "category-head";
+  head.className = "category-head" + (badgeInfo && badgeInfo.cls.includes("badge-wide") ? " stacked" : "");
   head.innerHTML = `<span class="label">${label}</span>` +
     (badgeInfo ? `<span class="badge ${badgeInfo.cls}">${badgeInfo.badge}</span>` : "");
   wrap.appendChild(head);
@@ -414,8 +513,18 @@ function initSettings() {
       showToast("Hisob bog'landi");
       populateProfile(auth.currentUser);
     } catch (e) {
-      console.error(e);
-      showToast("Bog'lashda xatolik yuz berdi");
+      console.error("Google link xatosi:", e.code, e.message);
+      if (e.code === "auth/credential-already-in-use") {
+        showToast("Bu Google hisob boshqa foydalanuvchida band");
+      } else if (e.code === "auth/popup-blocked") {
+        showToast("Brauzer popup oynani blokladi, ruxsat bering");
+      } else if (e.code === "auth/unauthorized-domain") {
+        showToast("Bu domen Firebase'da ro'yxatdan o'tmagan");
+      } else if (e.code === "auth/popup-closed-by-user") {
+        // foydalanuvchi o'zi yopdi, xabar shart emas
+      } else {
+        showToast("Xato: " + (e.code || e.message));
+      }
     }
   };
 
@@ -486,20 +595,37 @@ async function populateProfile(user) {
 let deferredInstallPrompt = null;
 function initInstallPrompt() {
   const installBtn = document.getElementById("installBtn");
+  const banner = document.getElementById("installBanner");
+  const bannerBtn = document.getElementById("installBannerBtn");
+  const bannerClose = document.getElementById("installBannerClose");
+  const dismissed = sessionStorage.getItem("installBannerDismissed");
+
   window.addEventListener("beforeinstallprompt", (e) => {
     e.preventDefault();
     deferredInstallPrompt = e;
     installBtn.classList.remove("hidden");
+    if (!dismissed) banner.classList.remove("hidden");
   });
-  installBtn.onclick = async () => {
+
+  async function runInstall() {
     if (!deferredInstallPrompt) return;
     deferredInstallPrompt.prompt();
     await deferredInstallPrompt.userChoice;
     deferredInstallPrompt = null;
     installBtn.classList.add("hidden");
+    banner.classList.add("hidden");
+  }
+
+  installBtn.onclick = runInstall;
+  bannerBtn.onclick = runInstall;
+  bannerClose.onclick = () => {
+    banner.classList.add("hidden");
+    sessionStorage.setItem("installBannerDismissed", "1");
   };
+
   window.addEventListener("appinstalled", () => {
     installBtn.classList.add("hidden");
+    banner.classList.add("hidden");
   });
 }
 
