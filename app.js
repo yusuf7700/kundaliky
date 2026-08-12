@@ -12,6 +12,9 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
+db.enablePersistence({ synchronizeTabs: true }).catch((err) => {
+  console.warn("Firestore persistence yoqilmadi:", err.code);
+});
 
 const CACHE_VERSION = "kundaliky-v1";
 
@@ -192,6 +195,26 @@ async function renderMain() {
   statusRow.id = "saveStatus";
   statusRow.innerHTML = `Saqlandi`;
   content.appendChild(statusRow);
+
+  prefetchNeighbors();
+}
+
+function prefetchNeighbors() {
+  const mk = (dir) => {
+    const d = new Date(currentDate);
+    if (currentView === "kunlik") d.setDate(d.getDate() + dir);
+    else if (currentView === "haftalik") d.setDate(d.getDate() + dir * 7);
+    else d.setMonth(d.getMonth() + dir);
+    return d;
+  };
+  [mk(-1), mk(1)].forEach(d => {
+    const info = currentView === "kunlik"
+      ? { kind: "daily", key: dailyKey(d) }
+      : currentView === "haftalik"
+        ? { kind: "weekly", key: weeklyKey(d) }
+        : { kind: "monthly", key: monthlyKey(d) };
+    loadPeriod(info.kind, info.key).catch(() => {});
+  });
 }
 
 function buildTopField(kind, key, data, placeholder) {
@@ -712,9 +735,9 @@ auth.onAuthStateChanged(async (user) => {
     periodCache = {};
     document.getElementById("authScreen").classList.add("hidden");
     document.getElementById("app").classList.remove("hidden");
-    await maybeShowOnboarding();
-    await populateProfile(user);
-    switchView("kunlik");
+    switchView("kunlik");           // darhol asosiy ekranni ko'rsatamiz
+    maybeShowOnboarding();          // fonda, kutmasdan
+    populateProfile(user);          // fonda, kutmasdan
   } else {
     currentUser = null;
     document.getElementById("app").classList.add("hidden");
