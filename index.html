@@ -10,15 +10,15 @@
 <meta property="og:type" content="website">
 <meta property="og:title" content="KundalikY — Oy, hafta, kun rejalashtiruvchi">
 <meta property="og:description" content="Hayotingizni besh yo'nalishda balansda ushlab turing: Biznes, Bilim, Oila, Sport va Qiziqishlar.">
-<meta property="og:image" content="icon-512.png">
+<meta property="og:image" content="logo.png">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="KundalikY">
 <meta name="twitter:description" content="Oy, hafta va kunlik rejalashtirish ilovasi">
-<meta name="twitter:image" content="icon-512.png">
+<meta name="twitter:image" content="logo.png">
 
 <link rel="manifest" href="manifest.json">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="logo.png">
+<link rel="apple-touch-icon" href="logo.png">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -27,7 +27,10 @@
 
 <!-- AUTH SCREEN -->
 <div id="authScreen" class="center-screen hidden">
-  <h1 class="serif">KundalikY</h1>
+  <div class="auth-logo-wrap">
+    <img src="logo.png" alt="" class="auth-logo">
+    <div class="auth-logo-text">Kundalik<span>Y</span></div>
+  </div>
   <p>Hayotingizni besh yo'nalishda balansda ushlab turing: Biznes, Bilim, Oila, Sport va Qiziqishlar. Oylik maqsad &rarr; haftalik reja &rarr; kunlik harakat.</p>
   <button class="btn primary" id="googleSignInBtn">Google orqali kirish</button>
   <button class="btn ghost" id="guestSignInBtn">Mehmon sifatida davom etish</button>
@@ -36,7 +39,18 @@
 <!-- MAIN APP -->
 <div id="app" class="hidden">
 
+  <div class="install-banner hidden" id="installBanner">
+    <img src="logo.png" alt="">
+    <div class="install-banner-text">
+      <b>KundalikY</b>
+      <span>Ilova sifatida o'rnating</span>
+    </div>
+    <button class="btn primary" id="installBannerBtn">O'rnatish</button>
+    <button class="install-banner-close" id="installBannerClose">&times;</button>
+  </div>
+
   <div id="mainScreen">
+    <div class="brand-bar"><img src="logo.png" alt=""><span>KundalikY</span></div>
     <div class="topbar">
       <h1 class="serif" id="viewTitle">Kunlik</h1>
     </div>
@@ -49,6 +63,7 @@
   </div>
 
   <div id="settingsScreen" class="hidden">
+    <div class="brand-bar"><img src="logo.png" alt=""><span>KundalikY</span></div>
     <div class="topbar">
       <p class="eyebrow">BOSHQARUV</p>
       <h1 class="serif">Sozlamalar</h1>
