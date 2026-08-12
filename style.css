@@ -85,6 +85,50 @@ h1,h2,.serif{font-family:var(--serif);font-weight:400;}
 .b-teal{background:#2f7d6e;}
 .b-red{background:#a3273b;}
 .b-gray{background:#8a8578;}
+.b-cream{background:#efe9da;}
+
+.category-head.stacked{
+  flex-direction:column;align-items:flex-start;gap:8px;
+}
+.badge-wide{
+  white-space:normal;text-align:left;line-height:1.4;
+  max-width:100%;padding:6px 14px;
+}
+
+.top-field textarea{min-height:52px;}
+
+/* ---- weekly view ---- */
+.week-top{padding-top:14px;}
+.week-top-row{
+  display:flex;align-items:center;gap:12px;margin-bottom:12px;
+}
+.week-dot{
+  width:13px;height:13px;border-radius:50%;flex-shrink:0;
+}
+.week-top-row input{
+  flex:1;border:none;border-bottom:1px dotted var(--border);
+  background:transparent;padding:4px 2px;font-size:14px;
+  color:var(--text);outline:none;font-family:var(--sans);
+}
+.week-top-row input:focus{border-bottom-color:var(--accent);}
+
+.week-grid{
+  display:flex;flex-direction:column;gap:12px;
+  padding:6px 18px 12px;
+}
+.week-day-card{
+  background:var(--surface);border:0.5px solid var(--border);
+  border-radius:12px;padding:12px 14px;
+}
+.week-day-head{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:8px;
+}
+.week-day-label{font-size:15px;font-weight:500;}
+.day-pill{
+  width:56px;height:9px;border-radius:100px;display:inline-block;
+}
+.week-day-card textarea{min-height:56px;font-size:13.5px;}
 
 .item-list{display:flex;flex-direction:column;gap:6px;}
 .item-row{
